@@ -11,7 +11,7 @@ namespace Order_Management_System.Repository
         SqlCommand cmd;
         public OrderProcessorRepository()
         {
-            connectionstring=DbConnUtil.GetConnectionString();
+            connectionstring = DbConnUtil.GetConnectionString();
             cmd = new SqlCommand();
         }
         public void cancelOrder(int userId, int orderId)
@@ -22,11 +22,11 @@ namespace Order_Management_System.Repository
                 {
                     conn.Open();
 
-                    // Check if the userId and orderId exist in the Orders table
+
                     if (isOrderExists(conn, userId, orderId))
                     {
-                        // If the order exists, proceed to cancel it
-                        using (SqlCommand cmd = new SqlCommand("DELETE FROM Orders WHERE userId = @uid AND orderId = @oid", conn))
+
+                        using (SqlCommand cmd = new SqlCommand("delete from Orders where userId = @uid and orderId = @oid", conn))
                         {
                             cmd.Parameters.AddWithValue("@uid", userId);
                             cmd.Parameters.AddWithValue("@oid", orderId);
@@ -45,16 +45,16 @@ namespace Order_Management_System.Repository
                         throw new OrderNotFound($"Order with orderId {orderId} not found for userId {userId}.");
                     }
                 }
-            }catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
         }
 
-        // Helper method to check if the userId exists in the Users table
-        private bool isUserExists(SqlConnection conn, int userId)
+        public bool isUserExists(SqlConnection conn, int userId)
         {
-            using (SqlCommand cmd = new SqlCommand("SELECT 1 FROM Users WHERE userId = @uid", conn))
+            using (SqlCommand cmd = new SqlCommand("select 1 from Users where userId = @uid", conn))
             {
                 cmd.Parameters.AddWithValue("@uid", userId);
                 object result = cmd.ExecuteScalar();
@@ -62,10 +62,9 @@ namespace Order_Management_System.Repository
             }
         }
 
-        // Helper method to check if the orderId and userId exist in the Orders table
-        private bool isOrderExists(SqlConnection conn, int userId, int orderId)
+        public bool isOrderExists(SqlConnection conn, int userId, int orderId)
         {
-            using (SqlCommand cmd = new SqlCommand("SELECT 1 FROM Orders WHERE userId = @uid AND orderId = @oid", conn))
+            using (SqlCommand cmd = new SqlCommand("select 1 from Orders where userId = @uid and orderId = @oid", conn))
             {
                 cmd.Parameters.AddWithValue("@uid", userId);
                 cmd.Parameters.AddWithValue("@oid", orderId);
@@ -73,11 +72,6 @@ namespace Order_Management_System.Repository
                 return (result != null);
             }
         }
-
-
-
-
-
 
         public void createProduct(Users user, Products product)
         {
@@ -89,7 +83,7 @@ namespace Order_Management_System.Repository
 
                     if (isAdmin(conn, user.UserID))
                     {
-                        using (SqlCommand cmd = new SqlCommand("INSERT INTO Products (productName, description, price, quantityInStock, type) VALUES (@pname, @desc, @price, @quantity, @type); SELECT SCOPE_IDENTITY()", conn))
+                        using (SqlCommand cmd = new SqlCommand("insert into Products (productName, description, price, quantityInStock, type) values (@pname, @desc, @price, @quantity, @type)", conn))
                         {
                             cmd.Parameters.AddWithValue("@pname", product.ProductName);
                             cmd.Parameters.AddWithValue("@desc", product.Description);
@@ -98,7 +92,7 @@ namespace Order_Management_System.Repository
                             cmd.Parameters.AddWithValue("@type", product.Type);
                             int productId = Convert.ToInt32(cmd.ExecuteScalar());
 
-                            Console.WriteLine($"Product added successfully with productId: {productId}");
+                            Console.WriteLine($"Product added successfully with productId");
                         }
                     }
                     else
@@ -113,10 +107,9 @@ namespace Order_Management_System.Repository
             }
         }
 
-        // Helper method to check if the user is an admin
-        private bool isAdmin(SqlConnection conn, int userId)
+        public bool isAdmin(SqlConnection conn, int userId)
         {
-            using (SqlCommand cmd = new SqlCommand("SELECT 1 FROM Users WHERE userId = @uid AND role = 'Admin'", conn))
+            using (SqlCommand cmd = new SqlCommand("select 1 from Users where userId = @uid and role = 'Admin'", conn))
             {
                 cmd.Parameters.AddWithValue("@uid", userId);
                 object result = cmd.ExecuteScalar();
@@ -127,25 +120,25 @@ namespace Order_Management_System.Repository
 
         public int createUser(Users user)
         {
-            int createstatus=0;
+            int createstatus = 0;
             try
             {
-                using(SqlConnection conn=new SqlConnection(connectionstring))
+                using (SqlConnection conn = new SqlConnection(connectionstring))
                 {
                     conn.Open();
-                    using (SqlCommand cmd = new SqlCommand("insert into Users (username, password, role) VALUES (@username, @password, @role)", conn))
+                    using (SqlCommand cmd = new SqlCommand("insert into Users (username, password, role) values (@username, @password, @role)", conn))
                     {
                         cmd.Parameters.AddWithValue("@username", user.UserName);
                         cmd.Parameters.AddWithValue("@password", user.Password);
                         cmd.Parameters.AddWithValue("@role", user.Role);
-                        createstatus=cmd.ExecuteNonQuery();
+                        createstatus = cmd.ExecuteNonQuery();
                         if (createstatus == 1) { Console.WriteLine("User Added Successfully"); }
                     }
 
                 }
 
             }
-            catch(Exception e) { Console.WriteLine(e.Message); }
+            catch (Exception e) { Console.WriteLine(e.Message); }
             return createstatus;
         }
 
@@ -159,7 +152,7 @@ namespace Order_Management_System.Repository
                 {
                     conn.Open();
 
-                    // Retrieve all products from the Products table
+
                     using (SqlCommand cmd = new SqlCommand("select * from Products", conn))
                     {
                         using (SqlDataReader reader = cmd.ExecuteReader())
@@ -201,8 +194,8 @@ namespace Order_Management_System.Repository
                 {
                     conn.Open();
 
-                    // Retrieve products ordered by the specific user from the Orders table
-                    using (SqlCommand cmd = new SqlCommand("SELECT p.* FROM Products p JOIN Orders o ON p.productId = o.productId WHERE o.userId = @uid", conn))
+
+                    using (SqlCommand cmd = new SqlCommand("select p.* from Products p join Orders o on p.productId = o.productId where o.userId = @uid", conn))
                     {
                         cmd.Parameters.AddWithValue("@uid", user.UserID);
 
@@ -243,40 +236,33 @@ namespace Order_Management_System.Repository
                 {
                     conn.Open();
 
-                    // Check if the user already exists in the Users table
-                    using (SqlCommand cmd = new SqlCommand("SELECT userId FROM Users WHERE userId = @uid", conn))
+
+                    using (SqlCommand cmd = new SqlCommand("select userId from Users where userId = @uid", conn))
                     {
                         cmd.Parameters.AddWithValue("@uid", user.UserID);
                         object uId = cmd.ExecuteScalar();
 
                         if (uId == null)
                         {
-                            createUser(user); // Create the user if not found
+                            createUser(user);
                         }
                     }
 
-                    // Now, get the userId (whether it already existed or was just added)
-                    int userId = getUserId(conn, user.UserID);
 
-                    // Check if the userId is valid before proceeding
-                    if (userId != -1)
+
+                    using (SqlCommand cmd = new SqlCommand("insert into Orders (userId, productId) values (@userid, @productid)", conn))
                     {
-                        // Insert records into the Orders table
-                        using (SqlCommand cmd = new SqlCommand("INSERT INTO Orders (userId, productId) VALUES (@userid, @productid)", conn))
+                        foreach (Products product in products)
                         {
-                            foreach (Products product in products)
-                            {
-                                cmd.Parameters.Clear(); // Clear previous parameters
-                                cmd.Parameters.AddWithValue("@userid", userId); // Use the obtained userId
-                                cmd.Parameters.AddWithValue("@productid", product.ProductID);
-                                cmd.ExecuteNonQuery();
-                            }
+                            cmd.Parameters.Clear();
+                            cmd.Parameters.AddWithValue("@userid", user.UserID);
+                            cmd.Parameters.AddWithValue("@productid", product.ProductID);
+                            cmd.ExecuteNonQuery();
                         }
+
                     }
-                    else
-                    {
-                        Console.WriteLine("Failed to get a valid userId. Order creation aborted.");
-                    }
+
+
                 }
             }
             catch (Exception e)
@@ -285,15 +271,7 @@ namespace Order_Management_System.Repository
             }
         }
 
-        private int getUserId(SqlConnection conn, int userId)
-        {
-            using (SqlCommand cmd = new SqlCommand("SELECT userId FROM Users WHERE userId = @uid", conn))
-            {
-                cmd.Parameters.AddWithValue("@uid", userId);
-                object result = cmd.ExecuteScalar();
-                return (result != null) ? (int)result : -1; // Return -1 if user not found
-            }
-        }
+
 
     }
 }
