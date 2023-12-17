@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Order_Management_System.Utility
 {
-    internal class DbConnUtil
+    internal static class DbConnUtil
     {
         private static IConfiguration _iconfiguration;
         static DbConnUtil()
